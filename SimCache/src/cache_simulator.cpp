@@ -35,14 +35,8 @@ int main(int argc, char *argv[])
     int flagOut = atoi(argv[5]);
     char *arquivoEntrada = argv[6];
 
-    // Declaração de variáveis internas
-    int bOffset, bIndice, bins, ends = 0, tag, indice, cval, freePos, hits = 0, compulsorio = 0, capacidade = 0, conflito = 0, misses, usedPos = 0;
-	bool hit;
-    std::vector<Cache_t> cache(nsets * assoc);
-	std::ifstream infile;
-
     // Verificação das características da cache
-    if (nsets <= 0 || bsize <= 0 || assoc <= 0) { //TODO: Adicionar verificação de potência de 2
+    if (nsets <= 0 || bsize <= 0 || assoc <= 0 || nsets > 0 && (nsets & (nsets - 1)) != 0 || bsize > 0 && (bsize & (bsize - 1)) != 0 || assoc > 0 && (assoc & (assoc - 1)) != 0) {
     	std::cout << "nsets, bsize e assoc precisam ser potências de 2 e maiores que zero" << std::endl;
     	exit(EXIT_FAILURE);
 	}
@@ -55,6 +49,11 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	// Declaração de variáveis internas
+    int bOffset, bIndice, bins, ends = 0, tag, indice, cval, freePos, hits = 0, comp = 0, cap = 0, confl = 0, misses, usedPos = 0;
+	bool hit;
+    std::vector<Cache_t> cache(nsets * assoc);
+	std::ifstream infile;
 	infile.open(arquivoEntrada, std::ifstream::binary);
 
 	if (infile.fail()) {
@@ -62,7 +61,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
     }
 
-	// Calculo de offset, índice e tag
+	// Calculo de offset e índice
 	bOffset = log2(bsize);
 	bIndice = log2(nsets);
 	
@@ -93,7 +92,7 @@ int main(int argc, char *argv[])
 		}
 		if(!hit) {
 			if (cval < assoc) {
-				compulsorio++;
+				comp++;
 				cache[freePos].valid = true;
 				cache[freePos].tag = tag;
 				usedPos++;
@@ -103,11 +102,11 @@ int main(int argc, char *argv[])
 						std::cout << "Miss compulsório: " << bins << std::endl;
 			} else {
 				if (usedPos >= nsets * assoc) {
-					capacidade++;
+					cap++;
 					if(!flagOut)
 						std::cout << "Miss de capacidade: " << bins << std::endl;
 				} else {
-					conflito++;
+					confl++;
 					if(!flagOut)
 						std::cout << "Miss de conflito: " << bins << std::endl;
 				}
@@ -134,17 +133,18 @@ int main(int argc, char *argv[])
 		}
 	}
 	
-	misses = compulsorio + capacidade + conflito;
+	// Calcula o número total de misses
+	misses = comp + cap + confl;
 	
 	// Exibe os resultados
 	if(!flagOut) {
 		std::cout << "Total de acessos: " << ends << std::endl;
 		std::cout << "Hits: " << hits << " " << (float)hits/ends << std::endl;
 		std::cout << "Misses: " << misses << " "  << (float)misses/ends << std::endl;
-		std::cout << "Compulsórios: " << compulsorio << " "  << (float)compulsorio/misses << std::endl;
-		std::cout << "Capacidade: " << capacidade  << " " << (float)capacidade/misses << std::endl;
-		std::cout << "Conflito: " << conflito << " " << (float)conflito/misses << std::endl;
+		std::cout << "Compulsórios: " << comp << " "  << (float)comp/misses << std::endl;
+		std::cout << "Capacidade: " << cap  << " " << (float)cap/misses << std::endl;
+		std::cout << "Conflito: " << confl << " " << (float)confl/misses << std::endl;
 	} else
-		std::cout << ends << " " << (float)hits/ends << " " << (float)misses/ends << " " << (float)compulsorio/misses << " " << (float)capacidade/misses << " " << (float)conflito/misses << std::endl;
+		std::cout << ends << " " << (float)hits/ends << " " << (float)misses/ends << " " << (float)comp/misses << " " << (float)cap/misses << " " << (float)confl/misses << std::endl;
 	infile.close();
 }
