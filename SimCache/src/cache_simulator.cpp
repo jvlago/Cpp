@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
 						std::cout << "Miss de conflito: " << bins << std::endl;
 				}
 				if (*subst == 'r') {
-					int aux = rand() % assoc; // Sem seed
+					int aux = rand() % assoc;
 					cache[indice * assoc + aux].tag = tag;
 					cache[indice * assoc + aux].valid = true;
 				} else if (*subst == 'f' || *subst == 'l') {
