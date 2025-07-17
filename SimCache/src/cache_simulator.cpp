@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <fstream>
 #include <vector>
+#include <ctime>
 
 // Especificação
 	// nsets: número de conjuntos
@@ -54,6 +55,7 @@ int main(int argc, char *argv[])
 	bool hit;
     std::vector<Cache_t> cache(nsets * assoc);
 	std::ifstream infile;
+	srand(time(NULL));
 	infile.open(arquivoEntrada, std::ifstream::binary);
 
 	if (infile.fail()) {
